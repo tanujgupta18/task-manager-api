@@ -49,3 +49,10 @@ export const login = async (req, res) => {
     res.status(500).json({ msg: "Server error" });
   }
 };
+
+export const getProfile = async (req, res) => {
+  res.json({
+    id: req.user.id,
+    email: req.user.email,
+  });
+};
