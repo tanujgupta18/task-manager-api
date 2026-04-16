@@ -8,6 +8,9 @@ A RESTful API for managing tasks with authentication.
 * JWT-based authentication
 * CRUD operations for tasks
 * Each user can manage only their own tasks
+* Real-time task reminders (simulated)
+* Task categorization and tagging
+* Webhook integration for completed tasks
 
 ---
 
@@ -30,6 +33,7 @@ PORT=5000
 JWT_SECRET=your_secret_key
 PG_URI=your_postgres_connection_string
 MONGO_URI=your_mongodb_connection_string
+WEBHOOK_URL=your_webhook_url
 ```
 
 ---
@@ -91,7 +95,6 @@ Authorization: Bearer TOKEN
 ---
 
 ## Task APIs (Protected Routes)
-
 ### Create Task
 
 POST `/api/tasks`
@@ -99,15 +102,18 @@ POST `/api/tasks`
 ```json
 {
   "title": "Learn Backend",
-  "description": "Finish assignment"
+  "description": "Finish assignment",
+  "category": "Work",
+  "tags": ["Bug", "High Priority"],
+  "dueDate": "2026-04-16T18:00:00Z"
 }
 ```
 
 ---
 
-### Get All Tasks
+### Get All Tasks (with filters)
 
-GET `/api/tasks`
+GET `/api/tasks?category=Work&tag=Bug`
 
 ---
 
@@ -135,15 +141,40 @@ DELETE `/api/tasks/:id`
 
 ---
 
-## Features
+## Advanced Features (Level 3)
 
-* JWT Authentication
-* Password hashing using bcrypt
-* MongoDB for tasks
-* PostgreSQL for users
-* Input validation using express-validator
-* Global error handling
-* Protected routes using middleware
+### Task Reminders (Event-Driven)
+
+* When a task is created or updated with a `dueDate`, a reminder is scheduled.
+* Reminder triggers **1 hour before due time** using `setTimeout`.
+* If a task is updated or deleted, previous reminders are cancelled.
+* Completed tasks do not trigger reminders.
+
+---
+
+### Categories & Tags
+
+* Tasks support predefined categories:
+
+  * `Work`, `Personal`, `Urgent`
+* Tags are flexible and stored as an array of strings.
+* Tasks can be filtered using query parameters:
+
+  * `?category=Work`
+  * `?tag=Bug`
+
+---
+
+### Webhook Integration
+
+* When a task is marked as `completed`, a webhook is triggered.
+* Sends POST request to external service (`WEBHOOK_URL`)
+* Payload includes:
+
+  * taskId
+  * title
+  * userId
+  * completedAt
 
 ---
 
@@ -154,3 +185,4 @@ Use Postman to test all endpoints.
 * Add `Authorization: Bearer TOKEN` for protected routes
 * Test invalid inputs for validation
 * Try accessing another user's task → should return **403 Forbidden**
+* Use [https://webhook.site](https://webhook.site) to verify webhook payload
